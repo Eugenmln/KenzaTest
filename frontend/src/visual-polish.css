@@ -1,0 +1,272 @@
+:root {
+  --ink: #111312;
+  --charcoal: #171a18;
+  --cream: #f6f7f3;
+  --paper: #ffffff;
+  --orange: #45604f;
+  --orange-dark: #2f4438;
+  --sand: #dfe3dc;
+  --muted: #6a706b;
+  --line: rgba(17,19,18,.14);
+}
+
+body {
+  background: var(--cream);
+}
+
+.site-header {
+  height: 86px;
+  padding: 0 3.2vw;
+  background: rgba(246,247,243,.96);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.header-home-link {
+  border: 0;
+  background: transparent;
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border-bottom: 1px solid transparent;
+  transition: border-color 180ms ease;
+}
+
+.header-home-link:hover {
+  border-color: currentColor;
+}
+
+.wordmark {
+  font-size: 29px;
+}
+
+.header-actions {
+  gap: 7px;
+}
+
+.header-icon,
+.burger-button {
+  width: 48px;
+  height: 48px;
+}
+
+.header-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header-instagram {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.cart-icon span {
+  right: 0;
+  top: 1px;
+  min-width: 20px;
+  height: 20px;
+  background: #45604f;
+  font-size: 10px;
+}
+
+.burger-button span {
+  width: 26px;
+  height: 1.5px;
+}
+
+.hero--editorial {
+  background: #171a18;
+  color: #f7f8f5;
+}
+
+.hero__lead {
+  color: rgba(247,248,245,.7);
+}
+
+.hero__campaign {
+  background:
+    radial-gradient(circle at 78% 18%, rgba(69,96,79,.38), transparent 28%),
+    linear-gradient(145deg, #262b27 0%, #171a18 58%, #0f1110 100%);
+}
+
+.campaign-frame {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), transparent 25%),
+    linear-gradient(150deg, #343a35 0%, #1a1d1b 58%, #33483c 100%);
+}
+
+.product-card {
+  cursor: pointer;
+  transition: transform 260ms cubic-bezier(.2,.7,.2,1);
+}
+
+.product-card__media {
+  transition: box-shadow 260ms ease, transform 260ms cubic-bezier(.2,.7,.2,1);
+}
+
+.product-card .product-image,
+.product-card .product-visual {
+  transition: transform 420ms cubic-bezier(.2,.7,.2,1);
+}
+
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-7px);
+  }
+
+  .product-card:hover .product-card__media {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px rgba(17,19,18,.12);
+  }
+
+  .product-card:hover .product-image,
+  .product-card:hover .product-visual {
+    transform: scale(1.025);
+  }
+}
+
+.product-card__media {
+  background: #dfe3dc;
+}
+
+.editorial-band {
+  background: #45604f;
+  color: #f7f8f5;
+}
+
+.editorial-band__photo {
+  background: linear-gradient(125deg, #111312 0%, #252b27 45%, #76877b 100%);
+}
+
+.editorial-band__copy > p:not(.eyebrow) {
+  color: rgba(247,248,245,.78);
+}
+
+.collection-hero {
+  background: #171a18;
+}
+
+.store-location {
+  display: grid;
+  grid-template-columns: 1.35fr .65fr;
+  gap: 48px;
+  align-items: end;
+  padding: 88px 4vw 96px;
+  background: #f6f7f3;
+  border-top: 1px solid var(--line);
+}
+
+.store-location h2 {
+  max-width: 720px;
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(42px, 5vw, 76px);
+  line-height: .96;
+  letter-spacing: -.055em;
+}
+
+.store-location__details {
+  padding-bottom: 7px;
+}
+
+.store-location__details p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.store-location__details p:first-child {
+  margin-bottom: 7px;
+  font-weight: 700;
+}
+
+.site-footer {
+  min-height: 220px;
+  padding: 50px 4vw 44px;
+  background: #111312;
+  color: #f6f7f3;
+}
+
+.footer-wordmark {
+  font-size: 54px;
+  color: #f6f7f3;
+}
+
+.footer-links {
+  gap: 34px;
+}
+
+.footer-links a,
+.footer-links button {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.site-footer small {
+  font-size: 12px;
+  color: rgba(246,247,243,.58);
+}
+
+@media (max-width: 760px) {
+  .site-header {
+    height: 76px;
+    padding: 0 18px;
+  }
+
+  .header-left {
+    gap: 18px;
+  }
+
+  .wordmark {
+    font-size: 25px;
+  }
+
+  .header-home-link {
+    font-size: 12px;
+  }
+
+  .header-actions {
+    gap: 0;
+  }
+
+  .header-icon,
+  .burger-button {
+    width: 40px;
+    height: 44px;
+  }
+
+  .header-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .header-instagram {
+    display: none;
+  }
+
+  .store-location {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 64px 20px 72px;
+  }
+
+  .site-footer {
+    min-height: 250px;
+  }
+
+  .footer-wordmark {
+    font-size: 44px;
+  }
+}
