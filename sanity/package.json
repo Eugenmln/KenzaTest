@@ -1,7 +1,7 @@
 {
-  "name": "kenza-admin",
+  "name": "kova-commerce-admin",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
     "dev": "sanity dev",
     "deploy": "sanity deploy"
