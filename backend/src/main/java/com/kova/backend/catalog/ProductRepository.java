@@ -20,6 +20,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         """)
     List<Product> searchVisible(@Param("category") String category, @Param("q") String q);
 
+    @Query("select distinct p from Product p left join fetch p.category left join fetch p.variants order by p.createdAt desc")
+    List<Product> findAllForAdmin();
+
     @Query("select distinct p from Product p left join fetch p.category left join fetch p.variants where p.slug = :slug and p.visible = true")
     Optional<Product> findVisibleBySlug(@Param("slug") String slug);
 }
