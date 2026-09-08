@@ -47,7 +47,9 @@ public class OrderService {
 
         BigDecimal total = BigDecimal.ZERO;
         for (var cartItem : cart) {
-            var variant = cartItem.getVariant();
+            var variant = variantRepository.findByIdForUpdate(cartItem.getVariant().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Variant not found"));
+
             if (!variant.isActive() || variant.getStock() < cartItem.getQuantity()) {
                 throw new IllegalArgumentException("Insufficient stock for " + variant.getProduct().getName());
             }
@@ -65,7 +67,6 @@ public class OrderService {
 
             total = total.add(variant.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
             variant.setStock(variant.getStock() - cartItem.getQuantity());
-            variantRepository.save(variant);
         }
 
         order.setTotal(total);
@@ -76,6 +77,7 @@ public class OrderService {
 
     @Transactional
     public OrderResponse updateStatus(UUID orderId, OrderStatus status) {
+        if (status == null) throw new IllegalArgumentException("Status is required");
         Order order = orderRepository.findWithItemsById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setStatus(status);
