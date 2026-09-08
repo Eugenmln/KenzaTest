@@ -81,7 +81,7 @@
   top: 0;
   right: 0;
   z-index: 90;
-  width: min(92vw, 430px);
+  width: min(92vw, 460px);
   height: 100dvh;
   transform: translateX(100%);
   transition: transform 220ms ease;
@@ -122,6 +122,31 @@
   color: #777169;
 }
 
+.account-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.account-summary-card {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  border: 1px solid #d7d0c6;
+}
+
+.account-summary-card strong {
+  font-size: 1.7rem;
+}
+
+.account-summary-card span {
+  color: #777169;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .account-section {
   margin: 16px 0;
 }
@@ -134,6 +159,39 @@
 .cart-account-note p {
   color: #68625b;
   line-height: 1.5;
+}
+
+.order-list {
+  display: grid;
+  gap: 10px;
+}
+
+.order-card {
+  padding: 15px;
+  border: 1px solid #d7d0c6;
+}
+
+.order-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 0.78rem;
+}
+
+.order-card__top span {
+  color: #8a4b32;
+  text-align: right;
+}
+
+.order-card p {
+  margin: 9px 0 6px;
+  color: #171717;
+  font-weight: 700;
+}
+
+.order-card small {
+  color: #777169;
+  line-height: 1.45;
 }
 
 .secondary-button {
@@ -161,6 +219,35 @@
 
 .account-icon {
   font-size: 0.76rem;
+}
+
+.product-modal__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.favorite-button {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.favorite-button--active {
+  background: #171717;
+  color: #f4efe7;
+}
+
+.whatsapp-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 @media (max-width: 560px) {
