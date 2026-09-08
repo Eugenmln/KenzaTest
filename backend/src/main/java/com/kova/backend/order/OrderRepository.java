@@ -12,6 +12,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("select distinct o from Order o left join fetch o.items where o.user.id = :userId order by o.createdAt desc")
     List<Order> findAllByUserId(@Param("userId") UUID userId);
 
+    @Query("select distinct o from Order o left join fetch o.items order by o.createdAt desc")
+    List<Order> findAllWithItems();
+
     @Query("select distinct o from Order o left join fetch o.items where o.id = :id")
     Optional<Order> findWithItemsById(@Param("id") UUID id);
 }
