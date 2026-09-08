@@ -1,136 +1,131 @@
 # KOVA Commerce
 
-Portfolio project: a full commerce-oriented storefront built with React, Sanity and Supabase.
+Full-stack portfolio project for a fictional fashion brand.
 
-KOVA is a fictional fashion brand created for this project. The goal is to demonstrate a realistic frontend architecture, CMS-driven catalog, customer authentication, persistent cart data and order modeling without tying the code to a real client.
+The project is being evolved from an initial storefront prototype into a production-style commerce application with a custom Java backend, authentication, variant-level stock, persistent carts, favorites, orders and an admin API.
 
-## Stack
+## Target stack
 - React 19 + Vite
-- Sanity CMS for catalog administration
-- Supabase Auth + PostgreSQL for customer accounts, cart, favorites and orders
-- Row Level Security (RLS) for customer-owned data
+- Java 21 + Spring Boot 3.5
+- Spring Security + JWT
+- Spring Data JPA
+- PostgreSQL
+- Flyway migrations
 - WhatsApp checkout handoff
-- Vercel-ready frontend
+- Docker Compose for local PostgreSQL
 
-## Current features
-- Editorial responsive home.
-- Separate collection/catalog view.
-- Product cards and product detail modal.
-- Size, color and quantity selection.
-- Persistent anonymous cart using `localStorage`.
-- Email/password registration and login using Supabase Auth.
-- Authenticated account drawer.
-- Authenticated cart synchronization with Supabase.
-- Sanity-managed products and product visibility.
-- WhatsApp checkout handoff.
-- Supabase schema for profiles, carts, favorites, orders and order items.
-- RLS policies that isolate each customer's data.
+## Backend
+The custom backend lives in `backend/` and is now the canonical transactional architecture for the portfolio version.
 
-## Architecture
+It includes:
+- customer registration and login
+- BCrypt password hashing
+- JWT authentication
+- CUSTOMER and ADMIN roles
+- customer profile endpoints
+- public catalog API
+- category management
+- product CRUD
+- product variants by size/color
+- variant-level stock
+- authenticated cart
+- favorites
+- order creation and history
+- admin order listing and status updates
+- transactional checkout with stock validation
+- pessimistic variant locking during checkout to reduce overselling races
+- PostgreSQL schema managed by Flyway
+- API validation and error responses
+- configurable CORS
+- optional initial admin bootstrap from environment variables
 
-```text
-Customer browser
-   |
-   +-- React / Vite
-   |      +-- UI, navigation and cart state
-   |      +-- Supabase Auth session
-   |      +-- Sanity catalog queries
-   |
-   +-- Sanity CMS
-   |      +-- products
-   |      +-- images
-   |      +-- categories / merchandising
-   |
-   +-- Supabase
-          +-- auth.users
-          +-- profiles
-          +-- cart_items
-          +-- favorites
-          +-- orders
-          +-- order_items
-```
-
-The product catalog belongs to Sanity. Customer-owned transactional data belongs to Supabase. This keeps editorial/product content separate from authentication and relational commerce data.
-
-## Project structure
+## API structure
 
 ```text
-frontend/
-  src/
-    components/
-    context/
-    data/
-    lib/
-    pages/
-    services/
-
-sanity/
-  schemaTypes/
-
-supabase/
-  migrations/
+backend/
+  src/main/java/com/kova/backend/
+    auth/
+    cart/
+    catalog/
+    common/
+    config/
+    favorite/
+    order/
+    security/
+    user/
+  src/main/resources/
+    db/migration/
+    application.yml
 ```
 
-## Local setup
+See `backend/README.md` for endpoints and setup.
 
-### 1. Frontend
+## Frontend
+The React storefront currently contains the previous prototype integrations while the new Spring API is developed. The next integration pass will migrate authentication, catalog, cart, favorites and orders to the custom backend and remove the obsolete Supabase/Sanity transactional path.
+
+Visual polishing is intentionally being handled separately from backend work.
+
+## Run PostgreSQL
 
 ```bash
-cd frontend
-npm install
-cp .env.example .env.local
-npm run dev
+docker compose up -d postgres
 ```
 
-Required variables:
-
-```env
-VITE_SANITY_PROJECT_ID=
-VITE_SANITY_DATASET=production
-VITE_SANITY_API_VERSION=2026-09-01
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-VITE_WHATSAPP_NUMBER=
-VITE_INSTAGRAM_URL=
-```
-
-### 2. Supabase
-Create a Supabase project and run the SQL migration in:
-
-```text
-supabase/migrations/001_initial_schema.sql
-```
-
-Then copy the project URL and anon key to `frontend/.env.local`.
-
-### 3. Sanity Studio
+## Run backend
 
 ```bash
-cd sanity
-npm install
-npm run dev
+cd backend
+mvn spring-boot:run
 ```
 
-Replace `REEMPLAZAR_CON_PROJECT_ID` in `sanity/sanity.config.js` with the Sanity project ID and use the same ID in the frontend environment variables.
+Default local API:
 
-## Security model
-- Customer passwords are handled by Supabase Auth, never by the React app directly.
-- The frontend only receives the Supabase anonymous public key.
-- Customer tables use Row Level Security.
-- Users can only read/write rows associated with their own authenticated user ID.
-- Sanity remains dedicated to public catalog content and admin-managed merchandising.
+```text
+http://localhost:8080
+```
 
-## Portfolio roadmap
-- Customer profile editing.
-- Favorites UI and persistence.
-- Order creation before WhatsApp handoff.
-- Customer order history.
-- Search and advanced catalog filters.
-- CMS-managed category documents and ordering.
-- Product stock by variant.
-- Loading, error and empty-state components.
-- Automated tests.
-- Vercel deployment and screenshots.
+Health endpoint:
+
+```text
+GET /api/health
+```
+
+## Main endpoints
+
+### Public
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/products`
+- `GET /api/products/{slug}`
+- `GET /api/categories`
+
+### Customer
+- `GET /api/profile`
+- `PUT /api/profile`
+- `GET /api/cart`
+- `POST /api/cart`
+- `PUT /api/cart/{itemId}`
+- `DELETE /api/cart/{itemId}`
+- `DELETE /api/cart`
+- `GET /api/favorites`
+- `POST /api/favorites/{productId}`
+- `DELETE /api/favorites/{productId}`
+- `GET /api/orders`
+- `POST /api/orders`
+
+### Admin
+- `GET /api/admin/products`
+- `POST /api/admin/products`
+- `PUT /api/admin/products/{id}`
+- `DELETE /api/admin/products/{id}`
+- `GET /api/admin/categories`
+- `POST /api/admin/categories`
+- `PUT /api/admin/categories/{id}`
+- `DELETE /api/admin/categories/{id}`
+- `GET /api/admin/orders`
+- `PATCH /api/admin/orders/{orderId}/status`
 
 ## Status
-Active development. This repository is being evolved as a production-style portfolio project rather than a client-specific mockup.
+Active development on `feature/kova-commerce-foundation`.
+
+The backend foundation is implemented. The next functional phase is wiring the React application to the Spring API, followed by visual refinement and deployment.
