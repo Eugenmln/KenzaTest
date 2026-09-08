@@ -129,6 +129,7 @@ export default function App() {
   return (
     <div className="site-shell">
       <SiteHeader
+        page={page}
         cartCount={cartCount}
         user={user}
         onGoHome={openHome}
