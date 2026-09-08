@@ -35,7 +35,7 @@ export async function replaceRemoteCart(userId, items) {
 
   const rows = items.map((item) => ({
     user_id: userId,
-    product_id: item.productId || item.key.split('-')[0],
+    product_id: item.productId || item.key,
     product_name: item.name,
     price: item.price,
     size: item.size,
@@ -79,4 +79,49 @@ export async function createOrder(userId, items, customer) {
   if (itemsError) throw itemsError
 
   return order
+}
+
+export async function loadOrders(userId) {
+  if (!supabaseConfigured || !userId) return []
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, status, total, created_at, order_items(product_name, quantity, size, color, unit_price)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function loadFavoriteIds(userId) {
+  if (!supabaseConfigured || !userId) return []
+
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('product_id')
+    .eq('user_id', userId)
+
+  if (error) throw error
+  return (data || []).map((item) => item.product_id)
+}
+
+export async function setFavorite(userId, productId, favorite) {
+  if (!supabaseConfigured || !userId || !productId) return
+
+  if (favorite) {
+    const { error } = await supabase
+      .from('favorites')
+      .upsert({ user_id: userId, product_id: productId }, { onConflict: 'user_id,product_id' })
+    if (error) throw error
+    return
+  }
+
+  const { error } = await supabase
+    .from('favorites')
+    .delete()
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+
+  if (error) throw error
 }
