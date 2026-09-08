@@ -1,9 +1,9 @@
-export default function CartDrawer({ open, items, onClose, onRemove, onClear }) {
+export default function CartDrawer({ open, items, user, onLogin, onClose, onRemove, onClear }) {
   const whatsapp = import.meta.env.VITE_WHATSAPP_NUMBER || '5493760000000'
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0)
 
   const message = [
-    'Hola Kenza 👋 Quiero consultar por este pedido:',
+    'Hola KOVA 👋 Quiero consultar por este pedido:',
     '',
     ...items.flatMap((item) => [
       `• ${item.name}`,
@@ -13,7 +13,7 @@ export default function CartDrawer({ open, items, onClose, onRemove, onClear }) 
     ]),
     `Total de referencia: $${total.toLocaleString('es-AR')}`,
     '',
-    '¿Me confirman disponibilidad y formas de pago/retiro?'
+    '¿Me confirman disponibilidad y formas de pago/envío?'
   ].join('\n')
 
   const waUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`
@@ -25,7 +25,7 @@ export default function CartDrawer({ open, items, onClose, onRemove, onClear }) 
         <div className="cart-drawer__header">
           <div>
             <p className="eyebrow">Tu selección</p>
-            <h2>Pedido</h2>
+            <h2>Carrito</h2>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
@@ -49,10 +49,16 @@ export default function CartDrawer({ open, items, onClose, onRemove, onClear }) 
 
         <div className="cart-drawer__footer">
           <div className="cart-total"><span>Total</span><strong>${total.toLocaleString('es-AR')}</strong></div>
+          {!user && items.length > 0 && (
+            <div className="cart-account-note">
+              <p>Podés continuar sin cuenta o iniciar sesión para guardar el carrito y tus pedidos.</p>
+              <button className="text-button" onClick={onLogin}>Iniciar sesión</button>
+            </div>
+          )}
           <a className={`whatsapp-button ${items.length === 0 ? 'whatsapp-button--disabled' : ''}`} href={items.length ? waUrl : undefined} target="_blank" rel="noreferrer">
-            Finalizar por WhatsApp
+            Continuar por WhatsApp
           </a>
-          {items.length > 0 && <button className="text-button" onClick={onClear}>Vaciar pedido</button>}
+          {items.length > 0 && <button className="text-button" onClick={onClear}>Vaciar carrito</button>}
         </div>
       </aside>
     </>
