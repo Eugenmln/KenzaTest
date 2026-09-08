@@ -34,6 +34,11 @@ public class OrderService {
         return orderRepository.findAllByUserId(currentUser.id()).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<OrderResponse> listAll() {
+        return orderRepository.findAllWithItems().stream().map(this::toResponse).toList();
+    }
+
     @Transactional
     public OrderResponse createFromCart(CreateOrderRequest request) {
         UUID userId = currentUser.id();
