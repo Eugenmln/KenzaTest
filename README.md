@@ -1,61 +1,136 @@
-# KENZA — catálogo administrable + WhatsApp
+# KOVA Commerce
 
-Primera versión funcional de una web catálogo para **Kenza Posadas**.
+Portfolio project: a full commerce-oriented storefront built with React, Sanity and Supabase.
 
-## Qué incluye
-- Home editorial con identidad visual inspirada en Kenza.
-- Catálogo responsive con categorías.
-- Ficha de producto con talle, color y cantidad.
-- Mini carrito/pedido persistente en el navegador.
-- Botón final que arma automáticamente el pedido y lo envía a WhatsApp.
-- Sanity CMS para que el dueño cargue, edite, oculte y marque productos como agotados sin tocar código.
-- Datos demo como fallback: la web funciona incluso antes de conectar Sanity.
+KOVA is a fictional fashion brand created for this project. The goal is to demonstrate a realistic frontend architecture, CMS-driven catalog, customer authentication, persistent cart data and order modeling without tying the code to a real client.
 
-## Estructura
-- `frontend/`: React + Vite
-- `sanity/`: panel de administración Sanity Studio
+## Stack
+- React 19 + Vite
+- Sanity CMS for catalog administration
+- Supabase Auth + PostgreSQL for customer accounts, cart, favorites and orders
+- Row Level Security (RLS) for customer-owned data
+- WhatsApp checkout handoff
+- Vercel-ready frontend
 
-## Probar el frontend ahora
+## Current features
+- Editorial responsive home.
+- Separate collection/catalog view.
+- Product cards and product detail modal.
+- Size, color and quantity selection.
+- Persistent anonymous cart using `localStorage`.
+- Email/password registration and login using Supabase Auth.
+- Authenticated account drawer.
+- Authenticated cart synchronization with Supabase.
+- Sanity-managed products and product visibility.
+- WhatsApp checkout handoff.
+- Supabase schema for profiles, carts, favorites, orders and order items.
+- RLS policies that isolate each customer's data.
+
+## Architecture
+
+```text
+Customer browser
+   |
+   +-- React / Vite
+   |      +-- UI, navigation and cart state
+   |      +-- Supabase Auth session
+   |      +-- Sanity catalog queries
+   |
+   +-- Sanity CMS
+   |      +-- products
+   |      +-- images
+   |      +-- categories / merchandising
+   |
+   +-- Supabase
+          +-- auth.users
+          +-- profiles
+          +-- cart_items
+          +-- favorites
+          +-- orders
+          +-- order_items
+```
+
+The product catalog belongs to Sanity. Customer-owned transactional data belongs to Supabase. This keeps editorial/product content separate from authentication and relational commerce data.
+
+## Project structure
+
+```text
+frontend/
+  src/
+    components/
+    context/
+    data/
+    lib/
+    pages/
+    services/
+
+sanity/
+  schemaTypes/
+
+supabase/
+  migrations/
+```
+
+## Local setup
+
+### 1. Frontend
+
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Abrir la URL que muestra Vite, normalmente `http://localhost:5173`.
+Required variables:
 
-## Conectar WhatsApp
-1. Copiar `frontend/.env.example` a `frontend/.env.local`.
-2. Reemplazar `VITE_WHATSAPP_NUMBER` por el número real de Kenza, sin +, espacios ni guiones. Ejemplo Argentina: `5493764XXXXXX`.
+```env
+VITE_SANITY_PROJECT_ID=
+VITE_SANITY_DATASET=production
+VITE_SANITY_API_VERSION=2026-09-01
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_WHATSAPP_NUMBER=
+VITE_INSTAGRAM_URL=
+```
 
-## Crear el panel de administración
-1. Crear una cuenta/proyecto gratuito en Sanity.
-2. Copiar el `projectId` generado.
-3. Reemplazar `REEMPLAZAR_CON_PROJECT_ID` en `sanity/sanity.config.js`.
-4. En `frontend/.env.local`, agregar ese mismo valor en `VITE_SANITY_PROJECT_ID`.
-5. Ejecutar:
+### 2. Supabase
+Create a Supabase project and run the SQL migration in:
+
+```text
+supabase/migrations/001_initial_schema.sql
+```
+
+Then copy the project URL and anon key to `frontend/.env.local`.
+
+### 3. Sanity Studio
+
 ```bash
 cd sanity
 npm install
 npm run dev
 ```
-6. Desde el panel, crear productos con fotos, precio, categoría, colores y talles.
 
-## Deploy recomendado
-### Frontend
-Vercel: importar el repositorio y usar `frontend` como Root Directory. Build: `npm run build`. Output: `dist`.
+Replace `REEMPLAZAR_CON_PROJECT_ID` in `sanity/sanity.config.js` with the Sanity project ID and use the same ID in the frontend environment variables.
 
-### Admin
-Sanity Studio puede publicarse con:
-```bash
-cd sanity
-npm run deploy
-```
-Luego se puede usar una URL tipo `kenza.sanity.studio` o conectar un subdominio propio más adelante.
+## Security model
+- Customer passwords are handled by Supabase Auth, never by the React app directly.
+- The frontend only receives the Supabase anonymous public key.
+- Customer tables use Row Level Security.
+- Users can only read/write rows associated with their own authenticated user ID.
+- Sanity remains dedicated to public catalog content and admin-managed merchandising.
 
-## Datos que faltan para producción
-- Número real de WhatsApp.
-- Fotos originales de productos (no capturas de Instagram).
-- Precios, talles y colores reales.
-- Dirección/horarios si se muestran.
-- Dominio que quiera usar el cliente.
+## Portfolio roadmap
+- Customer profile editing.
+- Favorites UI and persistence.
+- Order creation before WhatsApp handoff.
+- Customer order history.
+- Search and advanced catalog filters.
+- CMS-managed category documents and ordering.
+- Product stock by variant.
+- Loading, error and empty-state components.
+- Automated tests.
+- Vercel deployment and screenshots.
+
+## Status
+Active development. This repository is being evolved as a production-style portfolio project rather than a client-specific mockup.
