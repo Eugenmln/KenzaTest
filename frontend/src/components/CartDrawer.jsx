@@ -1,9 +1,15 @@
+import { useState } from 'react'
+import { createOrder } from '../services/customerData.js'
+
 export default function CartDrawer({ open, items, user, onLogin, onClose, onRemove, onClear }) {
   const whatsapp = import.meta.env.VITE_WHATSAPP_NUMBER || '5493760000000'
+  const [checkoutError, setCheckoutError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0)
 
-  const message = [
+  const buildMessage = (orderId) => [
     'Hola KOVA 👋 Quiero consultar por este pedido:',
+    orderId ? `Pedido: ${orderId}` : null,
     '',
     ...items.flatMap((item) => [
       `• ${item.name}`,
@@ -14,9 +20,30 @@ export default function CartDrawer({ open, items, user, onLogin, onClose, onRemo
     `Total de referencia: $${total.toLocaleString('es-AR')}`,
     '',
     '¿Me confirman disponibilidad y formas de pago/envío?'
-  ].join('\n')
+  ].filter(Boolean).join('\n')
 
-  const waUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`
+  async function handleCheckout() {
+    if (!items.length || submitting) return
+    setCheckoutError('')
+    setSubmitting(true)
+
+    try {
+      let orderId = null
+      if (user) {
+        const order = await createOrder(user.id, items, {
+          name: user.user_metadata?.full_name,
+        })
+        orderId = order?.id || null
+      }
+
+      const waUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent(buildMessage(orderId))}`
+      window.open(waUrl, '_blank', 'noopener,noreferrer')
+    } catch {
+      setCheckoutError('No pudimos guardar el pedido. Podés volver a intentar o cerrar sesión y continuar como invitado.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <>
@@ -55,9 +82,10 @@ export default function CartDrawer({ open, items, user, onLogin, onClose, onRemo
               <button className="text-button" onClick={onLogin}>Iniciar sesión</button>
             </div>
           )}
-          <a className={`whatsapp-button ${items.length === 0 ? 'whatsapp-button--disabled' : ''}`} href={items.length ? waUrl : undefined} target="_blank" rel="noreferrer">
-            Continuar por WhatsApp
-          </a>
+          {checkoutError && <p className="auth-feedback auth-feedback--error">{checkoutError}</p>}
+          <button className="whatsapp-button" disabled={!items.length || submitting} onClick={handleCheckout}>
+            {submitting ? 'Guardando pedido…' : 'Continuar por WhatsApp'}
+          </button>
           {items.length > 0 && <button className="text-button" onClick={onClear}>Vaciar carrito</button>}
         </div>
       </aside>
