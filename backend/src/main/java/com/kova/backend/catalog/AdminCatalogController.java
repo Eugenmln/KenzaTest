@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,6 +18,11 @@ public class AdminCatalogController {
 
     public AdminCatalogController(CatalogService catalogService) {
         this.catalogService = catalogService;
+    }
+
+    @GetMapping("/products")
+    public List<ProductResponse> products() {
+        return catalogService.listAllProductsForAdmin();
     }
 
     @PostMapping("/products")
@@ -36,9 +42,25 @@ public class AdminCatalogController {
         catalogService.deleteProduct(id);
     }
 
+    @GetMapping("/categories")
+    public List<CategoryResponse> categories() {
+        return catalogService.listAllCategoriesForAdmin();
+    }
+
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponse createCategory(@Valid @RequestBody CategoryRequest request) {
         return catalogService.createCategory(request);
+    }
+
+    @PutMapping("/categories/{id}")
+    public CategoryResponse updateCategory(@PathVariable UUID id, @Valid @RequestBody CategoryRequest request) {
+        return catalogService.updateCategory(id, request);
+    }
+
+    @DeleteMapping("/categories/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable UUID id) {
+        catalogService.deleteCategory(id);
     }
 }
