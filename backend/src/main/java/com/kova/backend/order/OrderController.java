@@ -27,6 +27,11 @@ public class OrderController {
         return orderService.createFromCart(request);
     }
 
+    @GetMapping("/admin/orders")
+    public List<OrderService.OrderResponse> allOrders() {
+        return orderService.listAll();
+    }
+
     @PatchMapping("/admin/orders/{orderId}/status")
     public OrderService.OrderResponse updateStatus(@PathVariable UUID orderId,
                                                    @RequestBody OrderService.StatusRequest request) {
