@@ -11,21 +11,21 @@ export default function Home({ products, onOpenProduct, onOpenCollection }) {
           <p className="eyebrow">NUEVA COLECCIÓN</p>
           <h1>Ropa que<br />te acompaña.</h1>
           <p className="hero__lead">
-            Urbana, simple y fácil de usar. Prendas elegidas para combinar sin pensarlo demasiado.
+            Urbana, simple y fácil de usar. Prendas pensadas para combinar sin esfuerzo.
           </p>
           <button className="hero-link" onClick={() => onOpenCollection('Todos')}>
             VER COLECCIÓN <span>↗</span>
           </button>
         </div>
 
-        <div className="hero__campaign" aria-label="Campaña Kenza">
+        <div className="hero__campaign" aria-label="Campaña KOVA">
           <div className="campaign-frame">
             <div className="campaign-silhouette" aria-hidden="true">
               <span className="campaign-head" />
               <span className="campaign-body" />
             </div>
             <div className="campaign-caption">
-              <span>KENZA / 26</span>
+              <span>KOVA / 26</span>
               <span>NEW DROP</span>
             </div>
           </div>
@@ -49,12 +49,12 @@ export default function Home({ products, onOpenProduct, onOpenCollection }) {
       <section className="editorial-band">
         <div className="editorial-band__photo" aria-hidden="true">
           <div className="fabric-lines" />
-          <span>KENZA</span>
+          <span>KOVA</span>
         </div>
         <div className="editorial-band__copy">
           <p className="eyebrow">COLECCIÓN</p>
           <h2>Prendas para<br />todos los días.</h2>
-          <p>Remeras, camisas, jeans, buzos y más. Elegí tu talle y color; el pedido se termina por WhatsApp.</p>
+          <p>Remeras, camisas, jeans, buzos y más. Elegí talle y color, guardá tu carrito y continuá la compra por WhatsApp.</p>
           <button className="light-link" onClick={() => onOpenCollection('Todos')}>EXPLORAR COLECCIÓN ↗</button>
         </div>
       </section>
