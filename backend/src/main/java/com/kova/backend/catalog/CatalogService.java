@@ -25,6 +25,11 @@ public class CatalogService {
     }
 
     @Transactional(readOnly = true)
+    public List<ProductResponse> listAllProductsForAdmin() {
+        return productRepository.findAllForAdmin().stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public ProductResponse getBySlug(String slug) {
         return productRepository.findVisibleBySlug(slug).map(this::toResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
@@ -33,6 +38,11 @@ public class CatalogService {
     @Transactional(readOnly = true)
     public List<CategoryResponse> listCategories() {
         return categoryRepository.findByVisibleTrueOrderBySortOrderAscNameAsc().stream().map(this::toCategoryResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> listAllCategoriesForAdmin() {
+        return categoryRepository.findAll().stream().map(this::toCategoryResponse).toList();
     }
 
     @Transactional
@@ -61,11 +71,24 @@ public class CatalogService {
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
         Category category = new Category();
-        category.setName(request.name().trim());
-        category.setSlug(request.slug().trim().toLowerCase());
-        category.setSortOrder(request.sortOrder());
-        category.setVisible(request.visible());
+        applyCategory(category, request);
         return toCategoryResponse(categoryRepository.save(category));
+    }
+
+    @Transactional
+    public CategoryResponse updateCategory(UUID id, CategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        applyCategory(category, request);
+        return toCategoryResponse(categoryRepository.save(category));
+    }
+
+    @Transactional
+    public void deleteCategory(UUID id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        category.setVisible(false);
+        categoryRepository.save(category);
     }
 
     private void apply(Product product, ProductRequest request) {
@@ -96,6 +119,13 @@ public class CatalogService {
                 product.getVariants().add(variant);
             });
         }
+    }
+
+    private void applyCategory(Category category, CategoryRequest request) {
+        category.setName(request.name().trim());
+        category.setSlug(request.slug().trim().toLowerCase());
+        category.setSortOrder(request.sortOrder());
+        category.setVisible(request.visible());
     }
 
     private ProductResponse toResponse(Product product) {
