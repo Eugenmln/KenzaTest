@@ -1,10 +1,10 @@
 export default function SiteFooter({ onGoHome, onOpenMenu }) {
   return (
     <footer className="site-footer">
-      <button className="footer-wordmark" onClick={onGoHome}>KENZA</button>
+      <button className="footer-wordmark" onClick={onGoHome}>KOVA</button>
       <div className="footer-links">
         <a
-          href={import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com/kenza.posadas'}
+          href={import.meta.env.VITE_INSTAGRAM_URL || '#'}
           target="_blank"
           rel="noreferrer"
         >
@@ -12,7 +12,7 @@ export default function SiteFooter({ onGoHome, onOpenMenu }) {
         </a>
         <button onClick={onOpenMenu}>Contacto</button>
       </div>
-      <small>© 2026 KENZA</small>
+      <small>© 2026 KOVA</small>
     </footer>
   )
 }
