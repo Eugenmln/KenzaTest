@@ -3,6 +3,8 @@ import ProductCard from '../components/ProductCard.jsx'
 export default function Home({ products, onOpenProduct, onOpenCollection }) {
   const featured = products.filter((product) => product.featured).slice(0, 4)
   const homeProducts = featured.length ? featured : products.slice(0, 4)
+  const storeAddress = import.meta.env.VITE_STORE_ADDRESS || 'Av. Santa Fe 1860, Buenos Aires'
+  const storeHours = import.meta.env.VITE_STORE_HOURS || 'Lun a sáb · 10:00 a 20:00'
 
   return (
     <main>
@@ -56,6 +58,17 @@ export default function Home({ products, onOpenProduct, onOpenCollection }) {
           <h2>Prendas para<br />todos los días.</h2>
           <p>Remeras, camisas, jeans, buzos y más. Elegí talle y color, guardá tu carrito y continuá la compra por WhatsApp.</p>
           <button className="light-link" onClick={() => onOpenCollection('Todos')}>EXPLORAR COLECCIÓN ↗</button>
+        </div>
+      </section>
+
+      <section className="store-location">
+        <div>
+          <p className="eyebrow">SHOWROOM</p>
+          <h2>Vení a ver la colección.</h2>
+        </div>
+        <div className="store-location__details">
+          <p>{storeAddress}</p>
+          <p>{storeHours}</p>
         </div>
       </section>
     </main>
