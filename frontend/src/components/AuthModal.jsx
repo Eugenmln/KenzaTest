@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 
 export default function AuthModal({ open, onClose }) {
-  const { configured, signIn, signUp } = useAuth()
+  const { signIn, signUp } = useAuth()
   const [mode, setMode] = useState('login')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   if (!open) return null
@@ -16,26 +15,16 @@ export default function AuthModal({ open, onClose }) {
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
-    setMessage('')
-
-    if (!configured) {
-      setError('Supabase todavía no está configurado en las variables de entorno.')
-      return
-    }
-
     setSubmitting(true)
+
     const result = mode === 'login'
       ? await signIn(email, password)
       : await signUp(email, password, fullName)
+
     setSubmitting(false)
 
     if (result.error) {
-      setError(result.error.message)
-      return
-    }
-
-    if (mode === 'register' && !result.data.session) {
-      setMessage('Cuenta creada. Revisá tu email para confirmar el registro.')
+      setError(result.error.message || 'No pudimos completar la operación.')
       return
     }
 
@@ -71,14 +60,13 @@ export default function AuthModal({ open, onClose }) {
           </label>
 
           {error && <p className="auth-feedback auth-feedback--error">{error}</p>}
-          {message && <p className="auth-feedback">{message}</p>}
 
           <button className="primary-button" type="submit" disabled={submitting}>
             {submitting ? 'Procesando…' : mode === 'login' ? 'Ingresar' : 'Crear cuenta'}
           </button>
         </form>
 
-        <button className="auth-switch" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setMessage('') }}>
+        <button className="auth-switch" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}>
           {mode === 'login' ? '¿No tenés cuenta? Registrate' : '¿Ya tenés cuenta? Iniciá sesión'}
         </button>
       </section>
