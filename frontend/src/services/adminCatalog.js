@@ -43,3 +43,18 @@ export const updateAdminProduct = (token, id, payload) => adminRequest(`/api/adm
 export const deleteAdminProduct = (token, id) => adminRequest(`/api/admin/products/${id}`, token, {
   method: 'DELETE',
 })
+
+export async function uploadAdminImage(token, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/uploads`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data?.message || `Error ${response.status}`)
+  return data.url
+}
