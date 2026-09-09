@@ -1,4 +1,17 @@
-export default function SiteHeader({ page, cartCount, user, onGoHome, onOpenCollection, onOpenCart, onOpenMenu, onOpenAuth, onOpenAccount }) {
+import { useState } from 'react'
+
+export default function SiteHeader({ page, cartCount, user, onGoHome, onSearch, onOpenCart, onOpenMenu, onOpenAuth, onOpenAccount }) {
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery] = useState('')
+
+  function submit(event) {
+    event.preventDefault()
+    const value = query.trim()
+    if (!value) return
+    onSearch(value)
+    setSearchOpen(false)
+  }
+
   return (
     <header className="site-header">
       <div className="header-left">
@@ -9,6 +22,18 @@ export default function SiteHeader({ page, cartCount, user, onGoHome, onOpenColl
       </div>
 
       <div className="header-actions">
+        {searchOpen && (
+          <form className="header-search" onSubmit={submit}>
+            <input
+              autoFocus
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar productos"
+              aria-label="Buscar productos"
+            />
+            <button type="submit">Buscar</button>
+          </form>
+        )}
         <a
           className="header-icon header-instagram"
           href={import.meta.env.VITE_INSTAGRAM_URL || '#'}
@@ -18,7 +43,7 @@ export default function SiteHeader({ page, cartCount, user, onGoHome, onOpenColl
         >
           IG
         </a>
-        <button className="header-icon" onClick={() => onOpenCollection('Todos')} aria-label="Ver colección">
+        <button className="header-icon" onClick={() => setSearchOpen((current) => !current)} aria-label="Buscar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
         </button>
         <button className="header-icon account-icon" onClick={user ? onOpenAccount : onOpenAuth} aria-label={user ? 'Abrir mi cuenta' : 'Iniciar sesión'}>
