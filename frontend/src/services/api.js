@@ -46,8 +46,16 @@ export function getProfile(token) {
   })
 }
 
-export function getProducts() {
-  return request('/api/products')
+export function getProducts({ q = '', category = '' } = {}) {
+  const params = new URLSearchParams()
+  if (q.trim()) params.set('q', q.trim())
+  if (category.trim()) params.set('category', category.trim())
+  const query = params.toString()
+  return request(`/api/products${query ? `?${query}` : ''}`)
+}
+
+export function getCategories() {
+  return request('/api/categories')
 }
 
 export { API_BASE_URL }
