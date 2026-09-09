@@ -48,11 +48,7 @@ export default function App() {
   const [accountOpen, setAccountOpen] = useState(false)
   const remoteCartReady = useRef(false)
   const [cart, setCart] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || []
-    } catch {
-      return []
-    }
+    try { return JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [] } catch { return [] }
   })
 
   async function reloadProducts(query = searchQuery) {
@@ -68,38 +64,27 @@ export default function App() {
 
   useEffect(() => {
     reloadProducts('')
-    getCategories()
-      .then((data) => {
-        const names = (data || []).filter((item) => item.visible !== false).map((item) => item.name)
-        if (names.length) setCategories(['Todos', ...names])
-      })
-      .catch(() => {})
+    getCategories().then((data) => {
+      const names = (data || []).filter((item) => item.visible !== false).map((item) => item.name)
+      if (names.length) setCategories(['Todos', ...names])
+    }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
-  }, [cart])
+  useEffect(() => { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)) }, [cart])
 
   useEffect(() => {
     remoteCartReady.current = false
     if (!user) return
-
-    loadRemoteCart(user.id)
-      .then((remoteItems) => {
-        if (remoteItems.length) setCart(remoteItems)
-        remoteCartReady.current = true
-      })
-      .catch(() => {
-        remoteCartReady.current = true
-      })
+    loadRemoteCart(user.id).then((remoteItems) => {
+      if (remoteItems.length) setCart(remoteItems)
+      remoteCartReady.current = true
+    }).catch(() => { remoteCartReady.current = true })
   }, [user])
 
   useEffect(() => {
     if (!user || !remoteCartReady.current) return
-    const timeout = window.setTimeout(() => {
-      replaceRemoteCart(user.id, cart).catch(() => {})
-    }, 350)
+    const timeout = window.setTimeout(() => { replaceRemoteCart(user.id, cart).catch(() => {}) }, 350)
     return () => window.clearTimeout(timeout)
   }, [cart, user])
 
@@ -136,29 +121,13 @@ export default function App() {
     reloadProducts(query)
   }
 
-  function clearSearch() {
-    setSearchQuery('')
-    reloadProducts('')
-  }
-
-  function openCreateProduct() {
-    setAdminProduct(undefined)
-    setAdminEditorOpen(true)
-  }
-
-  function openEditProduct(product) {
-    setAdminProduct(product)
-    setAdminEditorOpen(true)
-  }
+  function clearSearch() { setSearchQuery(''); reloadProducts('') }
+  function openCreateProduct() { setAdminProduct(undefined); setAdminEditorOpen(true) }
+  function openEditProduct(product) { setAdminProduct(product); setAdminEditorOpen(true) }
 
   async function handleDeleteProduct(product) {
     if (!token || !window.confirm(`¿Eliminar ${product.name}?`)) return
-    try {
-      await deleteAdminProduct(token, product.id)
-      await reloadProducts()
-    } catch (error) {
-      window.alert(error.message)
-    }
+    try { await deleteAdminProduct(token, product.id); await reloadProducts() } catch (error) { window.alert(error.message) }
   }
 
   const openHome = () => navigate('home')
@@ -175,6 +144,7 @@ export default function App() {
         cartCount={cartCount}
         user={user}
         onGoHome={openHome}
+        onOpenCollection={openCollection}
         onSearch={handleSearch}
         onOpenCart={() => setCartOpen(true)}
         onOpenMenu={() => setMenuOpen(true)}
@@ -183,64 +153,18 @@ export default function App() {
       />
 
       {page === 'home' ? (
-        <Home
-          products={products}
-          onOpenProduct={setSelectedProduct}
-          onOpenCollection={openCollection}
-          isAdmin={user?.role === 'ADMIN'}
-          onEditProduct={openEditProduct}
-          onDeleteProduct={handleDeleteProduct}
-        />
+        <Home products={products} onOpenProduct={setSelectedProduct} onOpenCollection={openCollection} isAdmin={user?.role === 'ADMIN'} onEditProduct={openEditProduct} onDeleteProduct={handleDeleteProduct} />
       ) : (
-        <Collection
-          products={products}
-          categories={categories}
-          activeCategory={activeCategory}
-          onChangeCategory={setActiveCategory}
-          onOpenProduct={setSelectedProduct}
-          catalogError={catalogError}
-          searchQuery={searchQuery}
-          onClearSearch={clearSearch}
-          isAdmin={user?.role === 'ADMIN'}
-          onCreateProduct={openCreateProduct}
-          onEditProduct={openEditProduct}
-          onDeleteProduct={handleDeleteProduct}
-        />
+        <Collection products={products} categories={categories} activeCategory={activeCategory} onChangeCategory={setActiveCategory} onOpenProduct={setSelectedProduct} catalogError={catalogError} searchQuery={searchQuery} onClearSearch={clearSearch} isAdmin={user?.role === 'ADMIN'} onCreateProduct={openCreateProduct} onEditProduct={openEditProduct} onDeleteProduct={handleDeleteProduct} />
       )}
 
       <SiteFooter onGoHome={openHome} onOpenMenu={() => setMenuOpen(true)} />
-
-      <MenuDrawer
-        open={menuOpen}
-        categories={categories}
-        user={user}
-        onClose={() => setMenuOpen(false)}
-        onOpenCategory={openCollection}
-        onGoHome={openHome}
-        onOpenAuth={() => { setMenuOpen(false); setAuthOpen(true) }}
-        onOpenAccount={() => { setMenuOpen(false); setAccountOpen(true) }}
-      />
-
+      <MenuDrawer open={menuOpen} categories={categories} user={user} onClose={() => setMenuOpen(false)} onOpenCategory={openCollection} onGoHome={openHome} onOpenAuth={() => { setMenuOpen(false); setAuthOpen(true) }} onOpenAccount={() => { setMenuOpen(false); setAccountOpen(true) }} />
       <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} onAdd={addToCart} />
-
-      <CartDrawer
-        open={cartOpen}
-        items={cart}
-        user={user}
-        onLogin={() => { setCartOpen(false); setAuthOpen(true) }}
-        onClose={() => setCartOpen(false)}
-        onRemove={(key) => setCart((items) => items.filter((item) => item.key !== key))}
-        onClear={() => setCart([])}
-      />
-
+      <CartDrawer open={cartOpen} items={cart} user={user} onLogin={() => { setCartOpen(false); setAuthOpen(true) }} onClose={() => setCartOpen(false)} onRemove={(key) => setCart((items) => items.filter((item) => item.key !== key))} onClear={() => setCart([])} />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} />
-      <AdminProductModal
-        open={adminEditorOpen && user?.role === 'ADMIN'}
-        product={adminProduct}
-        onClose={() => setAdminEditorOpen(false)}
-        onSaved={() => reloadProducts()}
-      />
+      <AdminProductModal open={adminEditorOpen && user?.role === 'ADMIN'} product={adminProduct} onClose={() => setAdminEditorOpen(false)} onSaved={() => reloadProducts()} />
     </div>
   )
 }
