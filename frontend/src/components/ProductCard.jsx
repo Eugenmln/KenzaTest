@@ -1,6 +1,6 @@
 import ProductVisual from './ProductVisual.jsx'
 
-export default function ProductCard({ product, onOpen }) {
+export default function ProductCard({ product, onOpen, isAdmin = false, onEdit, onDelete }) {
   return (
     <article className="product-card" onClick={() => onOpen(product)}>
       <div className="product-card__media">
@@ -9,6 +9,12 @@ export default function ProductCard({ product, onOpen }) {
           {product.isNew && <span>NEW</span>}
           {!product.available && <span>AGOTADO</span>}
         </div>
+        {isAdmin && (
+          <div className="product-card__admin-actions" onClick={(event) => event.stopPropagation()}>
+            <button onClick={() => onEdit(product)}>Editar</button>
+            <button onClick={() => onDelete(product)}>Eliminar</button>
+          </div>
+        )}
       </div>
       <div className="product-card__body">
         <div>
