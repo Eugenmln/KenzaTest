@@ -8,7 +8,6 @@ import ProductModal from './components/ProductModal.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
 import SiteHeader from './components/SiteHeader.jsx'
 import { useAuth } from './context/AuthContext.jsx'
-import { demoProducts } from './data/demoProducts.js'
 import Collection from './pages/Collection.jsx'
 import Home from './pages/Home.jsx'
 import { getProducts } from './services/api.js'
@@ -33,7 +32,8 @@ function mapApiProduct(product) {
 
 export default function App() {
   const { user } = useAuth()
-  const [products, setProducts] = useState(demoProducts)
+  const [products, setProducts] = useState([])
+  const [catalogError, setCatalogError] = useState('')
   const [page, setPage] = useState(pageFromPath)
   const [activeCategory, setActiveCategory] = useState('Todos')
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -52,11 +52,13 @@ export default function App() {
   })
 
   async function reloadProducts() {
+    setCatalogError('')
     try {
       const data = await getProducts()
       setProducts((data || []).map(mapApiProduct))
-    } catch {
-      setProducts(demoProducts)
+    } catch (error) {
+      setProducts([])
+      setCatalogError(error.message || 'No se pudo cargar el catálogo.')
     }
   }
 
@@ -172,6 +174,7 @@ export default function App() {
           activeCategory={activeCategory}
           onChangeCategory={setActiveCategory}
           onOpenProduct={setSelectedProduct}
+          catalogError={catalogError}
         />
       )}
 
