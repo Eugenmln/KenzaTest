@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import AccountDrawer from './components/AccountDrawer.jsx'
+import AdminCatalog from './components/AdminCatalog.jsx'
 import AuthModal from './components/AuthModal.jsx'
 import CartDrawer from './components/CartDrawer.jsx'
 import MenuDrawer from './components/MenuDrawer.jsx'
@@ -8,19 +9,27 @@ import SiteFooter from './components/SiteFooter.jsx'
 import SiteHeader from './components/SiteHeader.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 import { demoProducts } from './data/demoProducts.js'
-import { client, sanityConfigured } from './lib/sanity.js'
 import Collection from './pages/Collection.jsx'
 import Home from './pages/Home.jsx'
+import { getProducts } from './services/api.js'
 import { loadRemoteCart, replaceRemoteCart } from './services/customerData.js'
 
 const CART_STORAGE_KEY = 'kova-cart'
-
-const productQuery = `*[_type == "product" && visible != false] | order(featured desc, _createdAt desc){
-  _id, name, slug, category, price, shortDescription, description, colors, sizes, featured, isNew, available,
-  "images": images[]{"asset": asset->{url}}
-}`
-
 const pageFromPath = () => window.location.pathname.startsWith('/coleccion') ? 'collection' : 'home'
+
+function mapApiProduct(product) {
+  const variants = product.variants || []
+  const colors = [...new Set(variants.filter((item) => item.active !== false).map((item) => item.color).filter(Boolean))]
+  const sizes = [...new Set(variants.filter((item) => item.active !== false).map((item) => item.size).filter(Boolean))]
+
+  return {
+    ...product,
+    _id: product.id,
+    colors,
+    sizes,
+    images: (product.imageUrls || []).map((url) => ({ asset: { url } })),
+  }
+}
 
 export default function App() {
   const { user } = useAuth()
@@ -32,6 +41,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [adminOpen, setAdminOpen] = useState(false)
   const remoteCartReady = useRef(false)
   const [cart, setCart] = useState(() => {
     try {
@@ -40,6 +50,19 @@ export default function App() {
       return []
     }
   })
+
+  async function reloadProducts() {
+    try {
+      const data = await getProducts()
+      setProducts((data || []).map(mapApiProduct))
+    } catch {
+      setProducts(demoProducts)
+    }
+  }
+
+  useEffect(() => {
+    reloadProducts()
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
@@ -71,16 +94,6 @@ export default function App() {
     const onPopState = () => setPage(pageFromPath())
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
-  }, [])
-
-  useEffect(() => {
-    if (!sanityConfigured) return
-
-    client.fetch(productQuery)
-      .then((data) => {
-        if (data?.length) setProducts(data)
-      })
-      .catch(() => setProducts(demoProducts))
   }, [])
 
   const categories = useMemo(
@@ -140,6 +153,12 @@ export default function App() {
         onOpenAccount={() => setAccountOpen(true)}
       />
 
+      {user?.role === 'ADMIN' && (
+        <button className="admin-entry-button" onClick={() => setAdminOpen(true)}>
+          Administrar catálogo
+        </button>
+      )}
+
       {page === 'home' ? (
         <Home
           products={products}
@@ -187,6 +206,13 @@ export default function App() {
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} />
+      <AdminCatalog
+        open={adminOpen && user?.role === 'ADMIN'}
+        onClose={() => {
+          setAdminOpen(false)
+          reloadProducts()
+        }}
+      />
     </div>
   )
 }
