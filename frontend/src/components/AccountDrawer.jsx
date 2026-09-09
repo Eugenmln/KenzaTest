@@ -49,7 +49,7 @@ export default function AccountDrawer({ open, onClose }) {
           <div className="account-drawer__content">
             <div className="account-card">
               <span className="account-card__label">Nombre</span>
-              <strong>{user.user_metadata?.full_name || 'Cliente KOVA'}</strong>
+              <strong>{user.fullName || 'Cliente KOVA'}</strong>
             </div>
             <div className="account-card">
               <span className="account-card__label">Email</span>
