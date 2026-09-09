@@ -33,6 +33,29 @@ export default function Home({
   const width = useWindowWidth()
   const [hoveredCategory, setHoveredCategory] = useState(null)
   const [hoveredProduct, setHoveredProduct] = useState(null)
+  const [heroSrc, setHeroSrc] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch('/images/kova-model-hero-data.txt')
+      .then((response) => {
+        if (!response.ok) throw new Error('No se pudo cargar el hero')
+        return response.text()
+      })
+      .then((base64) => {
+        if (!cancelled) {
+          setHeroSrc(`data:image/jpeg;base64,${base64.trim()}`)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHeroSrc('')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const isMobile = width < 720
   const isTablet = width >= 720 && width < 1100
@@ -95,10 +118,10 @@ export default function Home({
       color: '#d7d2cc',
     },
     heroButton: {
-      border: '1px solid #f7f4ef',
+      border: '1px solid #b85d3b',
       borderRadius: 999,
-      background: '#f7f4ef',
-      color: '#111111',
+      background: '#b85d3b',
+      color: '#ffffff',
       padding: isMobile ? '14px 22px' : '16px 26px',
       display: 'flex',
       alignItems: 'center',
@@ -170,9 +193,9 @@ export default function Home({
     },
     viewAllButton: {
       border: 0,
-      borderBottom: '1px solid rgba(255,255,255,.5)',
+      borderBottom: '1px solid #b85d3b',
       background: 'transparent',
-      color: '#f7f4ef',
+      color: '#b85d3b',
       padding: '0 0 5px',
       fontSize: isMobile ? 13 : 15,
       fontWeight: 700,
@@ -305,16 +328,18 @@ export default function Home({
             style={styles.heroButton}
             onClick={() => onOpenCollection('Todos')}
           >
-            Ver colección <span style={{ fontSize: 15 }}>→</span>
+            Ver colección
           </button>
         </div>
 
         <div style={styles.heroVisual}>
-          <img
-            src="/images/kova-model-hero.jpg"
-            alt="Modelo KOVA con look urbano"
-            style={styles.heroImage}
-          />
+          {heroSrc && (
+            <img
+              src={heroSrc}
+              alt="Modelo KOVA con look urbano"
+              style={styles.heroImage}
+            />
+          )}
         </div>
       </section>
 
@@ -329,7 +354,6 @@ export default function Home({
                 ...styles.categoryButtonBase,
                 background: active ? '#121212' : 'transparent',
                 color: active ? '#b85d3b' : '#f7f4ef',
-                paddingLeft: active && !isMobile ? 24 : styles.categoryButtonBase.padding.split(' ')[1],
                 borderBottomColor: active ? '#b85d3b' : 'rgba(255,255,255,.28)',
               }}
               onMouseEnter={() => setHoveredCategory(category)}
