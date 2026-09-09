@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AccountDrawer from './components/AccountDrawer.jsx'
-import AdminCatalog from './components/AdminCatalog.jsx'
+import AdminProductModal from './components/AdminProductModal.jsx'
 import AuthModal from './components/AuthModal.jsx'
 import CartDrawer from './components/CartDrawer.jsx'
 import MenuDrawer from './components/MenuDrawer.jsx'
@@ -10,7 +10,8 @@ import SiteHeader from './components/SiteHeader.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 import Collection from './pages/Collection.jsx'
 import Home from './pages/Home.jsx'
-import { getProducts } from './services/api.js'
+import { deleteAdminProduct } from './services/adminCatalog.js'
+import { getCategories, getProducts } from './services/api.js'
 import { loadRemoteCart, replaceRemoteCart } from './services/customerData.js'
 
 const CART_STORAGE_KEY = 'kova-cart'
@@ -31,17 +32,20 @@ function mapApiProduct(product) {
 }
 
 export default function App() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState(['Todos', 'Remeras', 'Buzos', 'Jeans', 'Accesorios'])
   const [catalogError, setCatalogError] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(pageFromPath)
   const [activeCategory, setActiveCategory] = useState('Todos')
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [adminProduct, setAdminProduct] = useState(undefined)
+  const [adminEditorOpen, setAdminEditorOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
-  const [adminOpen, setAdminOpen] = useState(false)
   const remoteCartReady = useRef(false)
   const [cart, setCart] = useState(() => {
     try {
@@ -51,10 +55,10 @@ export default function App() {
     }
   })
 
-  async function reloadProducts() {
+  async function reloadProducts(query = searchQuery) {
     setCatalogError('')
     try {
-      const data = await getProducts()
+      const data = await getProducts({ q: query })
       setProducts((data || []).map(mapApiProduct))
     } catch (error) {
       setProducts([])
@@ -63,7 +67,14 @@ export default function App() {
   }
 
   useEffect(() => {
-    reloadProducts()
+    reloadProducts('')
+    getCategories()
+      .then((data) => {
+        const names = (data || []).filter((item) => item.visible !== false).map((item) => item.name)
+        if (names.length) setCategories(['Todos', ...names])
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -98,11 +109,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  const categories = useMemo(
-    () => ['Todos', ...new Set(products.map((product) => product.category).filter(Boolean))],
-    [products]
-  )
-
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
 
   function navigate(nextPage, category = 'Todos') {
@@ -119,13 +125,9 @@ export default function App() {
 
     setCart((current) => {
       const existing = current.find((item) => item.key === key)
-
       if (existing) {
-        return current.map((item) => (
-          item.key === key ? { ...item, qty: item.qty + options.qty } : item
-        ))
+        return current.map((item) => item.key === key ? { ...item, qty: item.qty + options.qty } : item)
       }
-
       return [...current, {
         key,
         productId: product._id,
@@ -138,8 +140,44 @@ export default function App() {
     setCartOpen(true)
   }
 
+  function handleSearch(query) {
+    setSearchQuery(query)
+    setActiveCategory('Todos')
+    navigate('collection', 'Todos')
+    reloadProducts(query)
+  }
+
+  function clearSearch() {
+    setSearchQuery('')
+    reloadProducts('')
+  }
+
+  function openCreateProduct() {
+    setAdminProduct(undefined)
+    setAdminEditorOpen(true)
+  }
+
+  function openEditProduct(product) {
+    setAdminProduct(product)
+    setAdminEditorOpen(true)
+  }
+
+  async function handleDeleteProduct(product) {
+    if (!token || !window.confirm(`¿Eliminar ${product.name}?`)) return
+    try {
+      await deleteAdminProduct(token, product.id)
+      await reloadProducts()
+    } catch (error) {
+      window.alert(error.message)
+    }
+  }
+
   const openHome = () => navigate('home')
-  const openCollection = (category = 'Todos') => navigate('collection', category)
+  const openCollection = (category = 'Todos') => {
+    setSearchQuery('')
+    reloadProducts('')
+    navigate('collection', category)
+  }
 
   return (
     <div className="site-shell">
@@ -148,18 +186,12 @@ export default function App() {
         cartCount={cartCount}
         user={user}
         onGoHome={openHome}
-        onOpenCollection={openCollection}
+        onSearch={handleSearch}
         onOpenCart={() => setCartOpen(true)}
         onOpenMenu={() => setMenuOpen(true)}
         onOpenAuth={() => setAuthOpen(true)}
         onOpenAccount={() => setAccountOpen(true)}
       />
-
-      {user?.role === 'ADMIN' && (
-        <button className="admin-entry-button" onClick={() => setAdminOpen(true)}>
-          Administrar catálogo
-        </button>
-      )}
 
       {page === 'home' ? (
         <Home
@@ -175,6 +207,12 @@ export default function App() {
           onChangeCategory={setActiveCategory}
           onOpenProduct={setSelectedProduct}
           catalogError={catalogError}
+          searchQuery={searchQuery}
+          onClearSearch={clearSearch}
+          isAdmin={user?.role === 'ADMIN'}
+          onCreateProduct={openCreateProduct}
+          onEditProduct={openEditProduct}
+          onDeleteProduct={handleDeleteProduct}
         />
       )}
 
@@ -191,11 +229,7 @@ export default function App() {
         onOpenAccount={() => { setMenuOpen(false); setAccountOpen(true) }}
       />
 
-      <ProductModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        onAdd={addToCart}
-      />
+      <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} onAdd={addToCart} />
 
       <CartDrawer
         open={cartOpen}
@@ -209,12 +243,11 @@ export default function App() {
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} />
-      <AdminCatalog
-        open={adminOpen && user?.role === 'ADMIN'}
-        onClose={() => {
-          setAdminOpen(false)
-          reloadProducts()
-        }}
+      <AdminProductModal
+        open={adminEditorOpen && user?.role === 'ADMIN'}
+        product={adminProduct}
+        onClose={() => setAdminEditorOpen(false)}
+        onSaved={() => reloadProducts()}
       />
     </div>
   )
