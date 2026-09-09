@@ -46,4 +46,8 @@ export function getProfile(token) {
   })
 }
 
+export function getProducts() {
+  return request('/api/products')
+}
+
 export { API_BASE_URL }
