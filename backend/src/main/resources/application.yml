@@ -23,4 +23,4 @@ app:
     secret: ${JWT_SECRET:change-this-development-secret-key-with-at-least-32-characters}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   cors:
-    allowed-origin: ${FRONTEND_URL:http://localhost:5173}
+    allowed-origin-patterns: ${FRONTEND_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}
