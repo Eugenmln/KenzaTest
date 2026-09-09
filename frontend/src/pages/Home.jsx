@@ -33,29 +33,6 @@ export default function Home({
   const width = useWindowWidth()
   const [hoveredCategory, setHoveredCategory] = useState(null)
   const [hoveredProduct, setHoveredProduct] = useState(null)
-  const [heroSrc, setHeroSrc] = useState('')
-
-  useEffect(() => {
-    let cancelled = false
-
-    fetch('/images/kova-model-hero-data.txt')
-      .then((response) => {
-        if (!response.ok) throw new Error('No se pudo cargar el hero')
-        return response.text()
-      })
-      .then((base64) => {
-        if (!cancelled) {
-          setHeroSrc(`data:image/jpeg;base64,${base64.trim()}`)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setHeroSrc('')
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   const isMobile = width < 720
   const isTablet = width >= 720 && width < 1100
@@ -333,13 +310,11 @@ export default function Home({
         </div>
 
         <div style={styles.heroVisual}>
-          {heroSrc && (
-            <img
-              src={heroSrc}
-              alt="Modelo KOVA con look urbano"
-              style={styles.heroImage}
-            />
-          )}
+          <img
+            src="/images/kova-model-hero.jpg"
+            alt="Modelo KOVA con look urbano"
+            style={styles.heroImage}
+          />
         </div>
       </section>
 
