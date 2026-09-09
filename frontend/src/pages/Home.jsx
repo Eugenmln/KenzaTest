@@ -1,66 +1,64 @@
 import ProductCard from '../components/ProductCard.jsx'
 
+const HOME_CATEGORIES = ['Remeras', 'Buzos', 'Jeans', 'Accesorios']
+
 export default function Home({ products, onOpenProduct, onOpenCollection, isAdmin = false, onEditProduct, onDeleteProduct }) {
   const featured = products.filter((product) => product.featured).slice(0, 4)
   const homeProducts = featured.length ? featured : products.slice(0, 4)
-  const storeAddress = import.meta.env.VITE_STORE_ADDRESS || 'Av. Santa Fe 1860, Buenos Aires'
-  const storeHours = import.meta.env.VITE_STORE_HOURS || 'Lun a sáb · 10:00 a 20:00'
 
   return (
-    <main>
-      <section className="hero hero--editorial">
-        <div className="hero__copy">
-          <p className="eyebrow">NUEVA COLECCIÓN</p>
-          <h1>Ropa que<br />te acompaña.</h1>
-          <p className="hero__lead">Urbana, simple y fácil de usar. Prendas pensadas para combinar sin esfuerzo.</p>
-          <button className="hero-link" onClick={() => onOpenCollection('Todos')}>VER COLECCIÓN <span>↗</span></button>
+    <main className="home-page">
+      <section className="home-hero">
+        <div className="home-hero__copy">
+          <p className="eyebrow">KOVA / NUEVA COLECCIÓN</p>
+          <h1>Prendas simples.<br />Buen corte.<br />Todos los días.</h1>
+          <p>Una selección urbana y fácil de combinar. Elegí lo que te gusta y terminá tu compra por WhatsApp.</p>
+          <button className="home-cta" onClick={() => onOpenCollection('Todos')}>Ver colección</button>
         </div>
-
-        <div className="hero__campaign" aria-label="Campaña KOVA">
-          <div className="campaign-frame">
-            <div className="campaign-silhouette" aria-hidden="true">
-              <span className="campaign-head" />
-              <span className="campaign-body" />
-            </div>
-            <div className="campaign-caption"><span>KOVA / 26</span><span>NEW DROP</span></div>
-          </div>
+        <div className="home-hero__visual" aria-hidden="true">
+          <div className="home-hero__shape home-hero__shape--one" />
+          <div className="home-hero__shape home-hero__shape--two" />
+          <span>KOVA</span>
         </div>
       </section>
 
-      <section className="featured-section">
+      <nav className="home-categories" aria-label="Categorías principales">
+        {HOME_CATEGORIES.map((category) => (
+          <button key={category} onClick={() => onOpenCollection(category)}>{category}</button>
+        ))}
+      </nav>
+
+      <section className="featured-section featured-section--clean">
         <div className="featured-heading">
-          <p className="eyebrow">SELECCIÓN</p>
-          <h2>Destacados</h2>
-          <button className="text-link" onClick={() => onOpenCollection('Todos')}>Ver todo ↗</button>
+          <div>
+            <p className="eyebrow">DESTACADOS</p>
+            <h2>Lo nuevo</h2>
+          </div>
+          <button className="text-link" onClick={() => onOpenCollection('Todos')}>Ver todo</button>
         </div>
 
-        <div className="product-grid product-grid--featured">
-          {homeProducts.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              onOpen={onOpenProduct}
-              isAdmin={isAdmin}
-              onEdit={onEditProduct}
-              onDelete={onDeleteProduct}
-            />
-          ))}
-        </div>
+        {homeProducts.length ? (
+          <div className="product-grid product-grid--featured">
+            {homeProducts.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onOpen={onOpenProduct}
+                isAdmin={isAdmin}
+                onEdit={onEditProduct}
+                onDelete={onDeleteProduct}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="catalog-empty">Todavía no hay productos destacados.</p>
+        )}
       </section>
 
-      <section className="editorial-band">
-        <div className="editorial-band__photo" aria-hidden="true"><div className="fabric-lines" /><span>KOVA</span></div>
-        <div className="editorial-band__copy">
-          <p className="eyebrow">COLECCIÓN</p>
-          <h2>Prendas para<br />todos los días.</h2>
-          <p>Remeras, buzos, jeans y accesorios. Elegí talle y color, guardá tu carrito y continuá la compra por WhatsApp.</p>
-          <button className="light-link" onClick={() => onOpenCollection('Todos')}>EXPLORAR COLECCIÓN ↗</button>
-        </div>
-      </section>
-
-      <section className="store-location">
-        <div><p className="eyebrow">SHOWROOM</p><h2>Vení a ver la colección.</h2></div>
-        <div className="store-location__details"><p>{storeAddress}</p><p>{storeHours}</p></div>
+      <section className="home-note">
+        <p>COLECCIÓN ACTUAL</p>
+        <h2>Remeras, buzos, jeans y accesorios.</h2>
+        <button onClick={() => onOpenCollection('Todos')}>Explorar todo ↗</button>
       </section>
     </main>
   )
