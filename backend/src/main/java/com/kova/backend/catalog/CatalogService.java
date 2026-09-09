@@ -21,17 +21,32 @@ public class CatalogService {
     public List<ProductResponse> listProducts(String category, String q) {
         String normalizedCategory = blankToNull(category);
         String normalizedQuery = blankToNull(q);
-        return productRepository.searchVisible(normalizedCategory, normalizedQuery).stream().map(this::toResponse).toList();
+
+        List<Product> products;
+        if (normalizedCategory != null && normalizedQuery != null) {
+            products = productRepository.findByVisibleTrueAndCategorySlugAndNameContainingIgnoreCaseOrderByFeaturedDescCreatedAtDesc(
+                    normalizedCategory,
+                    normalizedQuery
+            );
+        } else if (normalizedCategory != null) {
+            products = productRepository.findByVisibleTrueAndCategorySlugOrderByFeaturedDescCreatedAtDesc(normalizedCategory);
+        } else if (normalizedQuery != null) {
+            products = productRepository.findByVisibleTrueAndNameContainingIgnoreCaseOrderByFeaturedDescCreatedAtDesc(normalizedQuery);
+        } else {
+            products = productRepository.findByVisibleTrueOrderByFeaturedDescCreatedAtDesc();
+        }
+
+        return products.stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> listAllProductsForAdmin() {
-        return productRepository.findAllForAdmin().stream().map(this::toResponse).toList();
+        return productRepository.findAllByOrderByCreatedAtDesc().stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public ProductResponse getBySlug(String slug) {
-        return productRepository.findVisibleBySlug(slug).map(this::toResponse)
+        return productRepository.findBySlugAndVisibleTrue(slug).map(this::toResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
     }
 
