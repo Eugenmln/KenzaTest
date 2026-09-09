@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-export default function SiteHeader({ page, cartCount, user, onGoHome, onSearch, onOpenCart, onOpenMenu, onOpenAuth, onOpenAccount }) {
-  const [searchOpen, setSearchOpen] = useState(false)
+export default function SiteHeader({ page, cartCount, user, onGoHome, onSearch, onOpenCart, onOpenMenu, onOpenAuth, onOpenAccount, onOpenCollection }) {
   const [query, setQuery] = useState('')
 
   function submitSearch(event) {
@@ -9,31 +8,29 @@ export default function SiteHeader({ page, cartCount, user, onGoHome, onSearch, 
     const value = query.trim()
     if (!value) return
     onSearch(value)
-    setSearchOpen(false)
   }
 
   return (
     <header className="site-header">
       <div className="header-left">
         <button className="wordmark" onClick={onGoHome} aria-label="Ir al inicio">KOVA</button>
-        {page === 'collection' && <button className="header-home-link" onClick={onGoHome}>Inicio</button>}
+        <nav className="desktop-nav" aria-label="Navegación principal">
+          <button className={page === 'collection' ? 'active' : ''} onClick={() => onOpenCollection?.('Todos')}>Colección</button>
+          <button onClick={onOpenMenu}>Nosotros</button>
+          <button onClick={onOpenMenu}>Contacto</button>
+        </nav>
       </div>
 
       <div className="header-actions">
-        {searchOpen && (
-          <form className="header-search" onSubmit={submitSearch}>
-            <input
-              autoFocus
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar prendas"
-              aria-label="Buscar prendas"
-            />
-          </form>
-        )}
-        <button className="header-icon" onClick={() => setSearchOpen((open) => !open)} aria-label="Buscar">
+        <form className="header-search" onSubmit={submitSearch}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-        </button>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar productos..."
+            aria-label="Buscar productos"
+          />
+        </form>
         <button className="header-icon account-icon" onClick={user ? onOpenAccount : onOpenAuth} aria-label={user ? 'Abrir mi cuenta' : 'Iniciar sesión'}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.8-4.2 3.3-6.3 7.5-6.3s6.7 2.1 7.5 6.3"/></svg>
         </button>
