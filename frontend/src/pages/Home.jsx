@@ -1,6 +1,6 @@
 import ProductCard from '../components/ProductCard.jsx'
 
-export default function Home({ products, onOpenProduct, onOpenCollection }) {
+export default function Home({ products, onOpenProduct, onOpenCollection, isAdmin = false, onEditProduct, onDeleteProduct }) {
   const featured = products.filter((product) => product.featured).slice(0, 4)
   const homeProducts = featured.length ? featured : products.slice(0, 4)
   const storeAddress = import.meta.env.VITE_STORE_ADDRESS || 'Av. Santa Fe 1860, Buenos Aires'
@@ -12,12 +12,8 @@ export default function Home({ products, onOpenProduct, onOpenCollection }) {
         <div className="hero__copy">
           <p className="eyebrow">NUEVA COLECCIÓN</p>
           <h1>Ropa que<br />te acompaña.</h1>
-          <p className="hero__lead">
-            Urbana, simple y fácil de usar. Prendas pensadas para combinar sin esfuerzo.
-          </p>
-          <button className="hero-link" onClick={() => onOpenCollection('Todos')}>
-            VER COLECCIÓN <span>↗</span>
-          </button>
+          <p className="hero__lead">Urbana, simple y fácil de usar. Prendas pensadas para combinar sin esfuerzo.</p>
+          <button className="hero-link" onClick={() => onOpenCollection('Todos')}>VER COLECCIÓN <span>↗</span></button>
         </div>
 
         <div className="hero__campaign" aria-label="Campaña KOVA">
@@ -26,10 +22,7 @@ export default function Home({ products, onOpenProduct, onOpenCollection }) {
               <span className="campaign-head" />
               <span className="campaign-body" />
             </div>
-            <div className="campaign-caption">
-              <span>KOVA / 26</span>
-              <span>NEW DROP</span>
-            </div>
+            <div className="campaign-caption"><span>KOVA / 26</span><span>NEW DROP</span></div>
           </div>
         </div>
       </section>
@@ -43,33 +36,31 @@ export default function Home({ products, onOpenProduct, onOpenCollection }) {
 
         <div className="product-grid product-grid--featured">
           {homeProducts.map((product) => (
-            <ProductCard key={product._id} product={product} onOpen={onOpenProduct} />
+            <ProductCard
+              key={product._id}
+              product={product}
+              onOpen={onOpenProduct}
+              isAdmin={isAdmin}
+              onEdit={onEditProduct}
+              onDelete={onDeleteProduct}
+            />
           ))}
         </div>
       </section>
 
       <section className="editorial-band">
-        <div className="editorial-band__photo" aria-hidden="true">
-          <div className="fabric-lines" />
-          <span>KOVA</span>
-        </div>
+        <div className="editorial-band__photo" aria-hidden="true"><div className="fabric-lines" /><span>KOVA</span></div>
         <div className="editorial-band__copy">
           <p className="eyebrow">COLECCIÓN</p>
           <h2>Prendas para<br />todos los días.</h2>
-          <p>Remeras, camisas, jeans, buzos y más. Elegí talle y color, guardá tu carrito y continuá la compra por WhatsApp.</p>
+          <p>Remeras, buzos, jeans y accesorios. Elegí talle y color, guardá tu carrito y continuá la compra por WhatsApp.</p>
           <button className="light-link" onClick={() => onOpenCollection('Todos')}>EXPLORAR COLECCIÓN ↗</button>
         </div>
       </section>
 
       <section className="store-location">
-        <div>
-          <p className="eyebrow">SHOWROOM</p>
-          <h2>Vení a ver la colección.</h2>
-        </div>
-        <div className="store-location__details">
-          <p>{storeAddress}</p>
-          <p>{storeHours}</p>
-        </div>
+        <div><p className="eyebrow">SHOWROOM</p><h2>Vení a ver la colección.</h2></div>
+        <div className="store-location__details"><p>{storeAddress}</p><p>{storeHours}</p></div>
       </section>
     </main>
   )
