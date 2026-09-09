@@ -122,27 +122,16 @@ export default function App() {
 
   function addToCart(product, options) {
     const key = `${product._id}-${options.size}-${options.color}`
-
     setCart((current) => {
       const existing = current.find((item) => item.key === key)
-      if (existing) {
-        return current.map((item) => item.key === key ? { ...item, qty: item.qty + options.qty } : item)
-      }
-      return [...current, {
-        key,
-        productId: product._id,
-        name: product.name,
-        price: Number(product.price),
-        ...options,
-      }]
+      if (existing) return current.map((item) => item.key === key ? { ...item, qty: item.qty + options.qty } : item)
+      return [...current, { key, productId: product._id, name: product.name, price: Number(product.price), ...options }]
     })
-
     setCartOpen(true)
   }
 
   function handleSearch(query) {
     setSearchQuery(query)
-    setActiveCategory('Todos')
     navigate('collection', 'Todos')
     reloadProducts(query)
   }
@@ -198,6 +187,9 @@ export default function App() {
           products={products}
           onOpenProduct={setSelectedProduct}
           onOpenCollection={openCollection}
+          isAdmin={user?.role === 'ADMIN'}
+          onEditProduct={openEditProduct}
+          onDeleteProduct={handleDeleteProduct}
         />
       ) : (
         <Collection
