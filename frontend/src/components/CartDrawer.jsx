@@ -1,9 +1,15 @@
-export default function CartDrawer({ open, items, onClose, onRemove, onClear }) {
+import { useState } from 'react'
+import { createOrder } from '../services/customerData.js'
+
+export default function CartDrawer({ open, items, user, onLogin, onClose, onRemove, onClear }) {
   const whatsapp = import.meta.env.VITE_WHATSAPP_NUMBER || '5493760000000'
+  const [checkoutError, setCheckoutError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0)
 
-  const message = [
-    'Hola Kenza 👋 Quiero consultar por este pedido:',
+  const buildMessage = (orderId) => [
+    'Hola KOVA 👋 Quiero consultar por este pedido:',
+    orderId ? `Pedido: ${orderId}` : null,
     '',
     ...items.flatMap((item) => [
       `• ${item.name}`,
@@ -13,10 +19,31 @@ export default function CartDrawer({ open, items, onClose, onRemove, onClear }) 
     ]),
     `Total de referencia: $${total.toLocaleString('es-AR')}`,
     '',
-    '¿Me confirman disponibilidad y formas de pago/retiro?'
-  ].join('\n')
+    '¿Me confirman disponibilidad y formas de pago/envío?'
+  ].filter(Boolean).join('\n')
 
-  const waUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`
+  async function handleCheckout() {
+    if (!items.length || submitting) return
+    setCheckoutError('')
+    setSubmitting(true)
+
+    try {
+      let orderId = null
+      if (user) {
+        const order = await createOrder(user.id, items, {
+          name: user.user_metadata?.full_name,
+        })
+        orderId = order?.id || null
+      }
+
+      const waUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent(buildMessage(orderId))}`
+      window.open(waUrl, '_blank', 'noopener,noreferrer')
+    } catch {
+      setCheckoutError('No pudimos guardar el pedido. Podés volver a intentar o cerrar sesión y continuar como invitado.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <>
@@ -25,7 +52,7 @@ export default function CartDrawer({ open, items, onClose, onRemove, onClear }) 
         <div className="cart-drawer__header">
           <div>
             <p className="eyebrow">Tu selección</p>
-            <h2>Pedido</h2>
+            <h2>Carrito</h2>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
@@ -49,10 +76,17 @@ export default function CartDrawer({ open, items, onClose, onRemove, onClear }) 
 
         <div className="cart-drawer__footer">
           <div className="cart-total"><span>Total</span><strong>${total.toLocaleString('es-AR')}</strong></div>
-          <a className={`whatsapp-button ${items.length === 0 ? 'whatsapp-button--disabled' : ''}`} href={items.length ? waUrl : undefined} target="_blank" rel="noreferrer">
-            Finalizar por WhatsApp
-          </a>
-          {items.length > 0 && <button className="text-button" onClick={onClear}>Vaciar pedido</button>}
+          {!user && items.length > 0 && (
+            <div className="cart-account-note">
+              <p>Podés continuar sin cuenta o iniciar sesión para guardar el carrito y tus pedidos.</p>
+              <button className="text-button" onClick={onLogin}>Iniciar sesión</button>
+            </div>
+          )}
+          {checkoutError && <p className="auth-feedback auth-feedback--error">{checkoutError}</p>}
+          <button className="whatsapp-button" disabled={!items.length || submitting} onClick={handleCheckout}>
+            {submitting ? 'Guardando pedido…' : 'Continuar por WhatsApp'}
+          </button>
+          {items.length > 0 && <button className="text-button" onClick={onClear}>Vaciar carrito</button>}
         </div>
       </aside>
     </>

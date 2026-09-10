@@ -4,8 +4,8 @@ import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './schemaTypes/index.js'
 
 export default defineConfig({
-  name: 'kenza',
-  title: 'KENZA — Administración',
+  name: 'kova-commerce',
+  title: 'KOVA — Administración',
   projectId: 'REEMPLAZAR_CON_PROJECT_ID',
   dataset: 'production',
   plugins: [structureTool(), visionTool()],

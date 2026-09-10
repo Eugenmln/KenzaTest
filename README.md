@@ -1,61 +1,131 @@
-# KENZA — catálogo administrable + WhatsApp
+# KOVA Commerce
 
-Primera versión funcional de una web catálogo para **Kenza Posadas**.
+Full-stack portfolio project for a fictional fashion brand.
 
-## Qué incluye
-- Home editorial con identidad visual inspirada en Kenza.
-- Catálogo responsive con categorías.
-- Ficha de producto con talle, color y cantidad.
-- Mini carrito/pedido persistente en el navegador.
-- Botón final que arma automáticamente el pedido y lo envía a WhatsApp.
-- Sanity CMS para que el dueño cargue, edite, oculte y marque productos como agotados sin tocar código.
-- Datos demo como fallback: la web funciona incluso antes de conectar Sanity.
+The project is being evolved from an initial storefront prototype into a production-style commerce application with a custom Java backend, authentication, variant-level stock, persistent carts, favorites, orders and an admin API.
 
-## Estructura
-- `frontend/`: React + Vite
-- `sanity/`: panel de administración Sanity Studio
+## Target stack
+- React 19 + Vite
+- Java 21 + Spring Boot 3.5
+- Spring Security + JWT
+- Spring Data JPA
+- PostgreSQL
+- Flyway migrations
+- WhatsApp checkout handoff
+- Docker Compose for local PostgreSQL
 
-## Probar el frontend ahora
-```bash
-cd frontend
-npm install
-npm run dev
+## Backend
+The custom backend lives in `backend/` and is now the canonical transactional architecture for the portfolio version.
+
+It includes:
+- customer registration and login
+- BCrypt password hashing
+- JWT authentication
+- CUSTOMER and ADMIN roles
+- customer profile endpoints
+- public catalog API
+- category management
+- product CRUD
+- product variants by size/color
+- variant-level stock
+- authenticated cart
+- favorites
+- order creation and history
+- admin order listing and status updates
+- transactional checkout with stock validation
+- pessimistic variant locking during checkout to reduce overselling races
+- PostgreSQL schema managed by Flyway
+- API validation and error responses
+- configurable CORS
+- optional initial admin bootstrap from environment variables
+
+## API structure
+
+```text
+backend/
+  src/main/java/com/kova/backend/
+    auth/
+    cart/
+    catalog/
+    common/
+    config/
+    favorite/
+    order/
+    security/
+    user/
+  src/main/resources/
+    db/migration/
+    application.yml
 ```
 
-Abrir la URL que muestra Vite, normalmente `http://localhost:5173`.
+See `backend/README.md` for endpoints and setup.
 
-## Conectar WhatsApp
-1. Copiar `frontend/.env.example` a `frontend/.env.local`.
-2. Reemplazar `VITE_WHATSAPP_NUMBER` por el número real de Kenza, sin +, espacios ni guiones. Ejemplo Argentina: `5493764XXXXXX`.
+## Frontend
+The React storefront currently contains the previous prototype integrations while the new Spring API is developed. The next integration pass will migrate authentication, catalog, cart, favorites and orders to the custom backend and remove the obsolete Supabase/Sanity transactional path.
 
-## Crear el panel de administración
-1. Crear una cuenta/proyecto gratuito en Sanity.
-2. Copiar el `projectId` generado.
-3. Reemplazar `REEMPLAZAR_CON_PROJECT_ID` en `sanity/sanity.config.js`.
-4. En `frontend/.env.local`, agregar ese mismo valor en `VITE_SANITY_PROJECT_ID`.
-5. Ejecutar:
+Visual polishing is intentionally being handled separately from backend work.
+
+## Run PostgreSQL
+
 ```bash
-cd sanity
-npm install
-npm run dev
+docker compose up -d postgres
 ```
-6. Desde el panel, crear productos con fotos, precio, categoría, colores y talles.
 
-## Deploy recomendado
-### Frontend
-Vercel: importar el repositorio y usar `frontend` como Root Directory. Build: `npm run build`. Output: `dist`.
+## Run backend
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+Default local API:
+
+```text
+http://localhost:8080
+```
+
+Health endpoint:
+
+```text
+GET /api/health
+```
+
+## Main endpoints
+
+### Public
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/products`
+- `GET /api/products/{slug}`
+- `GET /api/categories`
+
+### Customer
+- `GET /api/profile`
+- `PUT /api/profile`
+- `GET /api/cart`
+- `POST /api/cart`
+- `PUT /api/cart/{itemId}`
+- `DELETE /api/cart/{itemId}`
+- `DELETE /api/cart`
+- `GET /api/favorites`
+- `POST /api/favorites/{productId}`
+- `DELETE /api/favorites/{productId}`
+- `GET /api/orders`
+- `POST /api/orders`
 
 ### Admin
-Sanity Studio puede publicarse con:
-```bash
-cd sanity
-npm run deploy
-```
-Luego se puede usar una URL tipo `kenza.sanity.studio` o conectar un subdominio propio más adelante.
+- `GET /api/admin/products`
+- `POST /api/admin/products`
+- `PUT /api/admin/products/{id}`
+- `DELETE /api/admin/products/{id}`
+- `GET /api/admin/categories`
+- `POST /api/admin/categories`
+- `PUT /api/admin/categories/{id}`
+- `DELETE /api/admin/categories/{id}`
+- `GET /api/admin/orders`
+- `PATCH /api/admin/orders/{orderId}/status`
 
-## Datos que faltan para producción
-- Número real de WhatsApp.
-- Fotos originales de productos (no capturas de Instagram).
-- Precios, talles y colores reales.
-- Dirección/horarios si se muestran.
-- Dominio que quiera usar el cliente.
+## Status
+Active development on `feature/kova-commerce-foundation`.
+
+The backend foundation is implemented. The next functional phase is wiring the React application to the Spring API, followed by visual refinement and deployment.

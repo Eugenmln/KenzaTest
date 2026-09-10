@@ -1,15 +1,49 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../context/AuthContext.jsx'
+import { loadFavoriteIds, setFavorite } from '../services/customerData.js'
 import ProductVisual from './ProductVisual.jsx'
 
 export default function ProductModal({ product, onClose, onAdd }) {
+  const { user } = useAuth()
   const [size, setSize] = useState(product?.sizes?.[0] || '')
   const [color, setColor] = useState(product?.colors?.[0] || '')
   const [qty, setQty] = useState(1)
+  const [favorite, setFavoriteState] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
   const canAdd = product?.available !== false && size && color
 
   const priceLabel = useMemo(() => `$${Number(product?.price || 0).toLocaleString('es-AR')}`, [product])
 
+  useEffect(() => {
+    setSize(product?.sizes?.[0] || '')
+    setColor(product?.colors?.[0] || '')
+    setQty(1)
+  }, [product])
+
+  useEffect(() => {
+    if (!user || !product) {
+      setFavoriteState(false)
+      return
+    }
+
+    loadFavoriteIds(user.id)
+      .then((ids) => setFavoriteState(ids.includes(product._id)))
+      .catch(() => setFavoriteState(false))
+  }, [user, product])
+
   if (!product) return null
+
+  async function handleFavorite() {
+    if (!user || favoriteLoading) return
+    const next = !favorite
+    setFavoriteLoading(true)
+    try {
+      await setFavorite(user.id, product._id, next)
+      setFavoriteState(next)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
@@ -20,7 +54,14 @@ export default function ProductModal({ product, onClose, onAdd }) {
         </div>
         <div className="product-modal__content">
           <p className="eyebrow">{product.category}</p>
-          <h2>{product.name}</h2>
+          <div className="product-modal__title-row">
+            <h2>{product.name}</h2>
+            {user && (
+              <button className={favorite ? 'favorite-button favorite-button--active' : 'favorite-button'} onClick={handleFavorite} disabled={favoriteLoading} aria-label={favorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}>
+                {favorite ? '♥' : '♡'}
+              </button>
+            )}
+          </div>
           <div className="modal-price">{priceLabel}</div>
           <p className="modal-description">{product.description || product.shortDescription}</p>
 
@@ -52,9 +93,9 @@ export default function ProductModal({ product, onClose, onAdd }) {
           </div>
 
           <button className="primary-button" disabled={!canAdd} onClick={() => { onAdd(product, { size, color, qty }); onClose() }}>
-            Agregar al pedido
+            Agregar al carrito
           </button>
-          <p className="modal-note">La compra se confirma por WhatsApp. No se realiza ningún pago dentro de esta web.</p>
+          <p className="modal-note">El pedido se registra en tu cuenta si iniciás sesión y la compra se coordina por WhatsApp.</p>
         </div>
       </section>
     </div>
